@@ -85,7 +85,11 @@ def power_control(q):
                     on = False
 
 
-def main():
+def main(args):
+    display = False
+    if args and args[0] == 'display':
+        display = True
+
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         error("Unable to open camera")
@@ -104,14 +108,16 @@ def main():
             detector = cv2.CascadeClassifier(CASCADE_FILE)
             rects = detector.detectMultiScale(
                     frame, scaleFactor=1.1, minNeighbors=5,
-                    minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
+                    minSize=(30, 30), flags=cv2.cv.CV_HAAR_SCALE_IMAGE)
             rects = ((int(x), int(y), int(x + w), int(y + h)) for (x, y, w, h) in rects)
 
             for (start_x, start_y, end_x, end_y) in rects:
-                cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 255, 0), 2)
                 q.put((start_x, start_y, end_x, end_y))
+                if display:
+                    cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 255, 0), 2)
 
-            cv2.imshow('frame', frame)
+            if display:
+                cv2.imshow('frame', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
     except KeyboardInterrupt:
@@ -126,5 +132,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
 
