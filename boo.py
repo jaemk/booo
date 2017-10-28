@@ -1,9 +1,13 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 import sys
 import time
-import queue
 from multiprocessing import Process, Queue
+try:
+    import queue as queue_lib
+except ImportError:
+    import Queue as queue_lib
 
 import cv2
 import numpy as np
@@ -76,7 +80,7 @@ def power_control(q):
                     elif on:
                         power.off(PIN)
                         on = False
-        except queue.Empty:
+        except queue_lib.Empty:
             now = time.time()
             if interval.last_time is not None:
                 elapsed = now - interval.last_time
