@@ -154,6 +154,7 @@ def main(args):
     cap.release()
     cv2.destroyAllWindows()
     proc.join()
+    power.cleanup()
     print("Bye!")
 
 
