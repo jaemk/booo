@@ -1,0 +1,20 @@
+# systemd config
+# copy to /lib/systemd/system/boo.service
+#
+# systemctl daemon-reload
+# systemctl enable boo.service
+# systemctl start boo
+# systemctl status boo.service
+# # tail the log
+# journalctl -f -u boo
+[Unit]
+Description=Boo
+
+[Service]
+WorkingDirectory=/<PATH_TO_PROJ_DIR>/boo
+ExecStart=python boo.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
