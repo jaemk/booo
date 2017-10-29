@@ -14,17 +14,18 @@ except ImportError:
 
 import cv2
 import numpy as np
-import imutils
+#import imutils
 
 import power
 
 
 CASCADE_FILE = "haarcascade.xml"
-MIN_AREA = 500
-# raspi
+# raspi when doing facial recognition needs a lot of time to process
 #MAX_ELAPSED_SECS = 2.5
 # faster things
 MAX_ELAPSED_SECS = 0.5
+# Motion detection area
+MIN_AREA = 200
 ACTIVE_PIN = 11
 POWER_PIN = 16
 
@@ -115,7 +116,19 @@ def sig_handle(signum, frame, q=None, cap=None, proc=None):
     sys.exit(0)
 
 
+def cleanup_pins():
+    power.init_board()
+    power.init_out_pins(ACTIVE_PIN, POWER_PIN)
+    power.off(ACTIVE_PIN)
+    power.off(POWER_PIN)
+    power.cleanup()
+
+
 def main(args):
+    if args.run_mode == 'clean':
+        cleanup_pins()
+        return
+
     display = args.display
 
     cap = cv2.VideoCapture(0)
@@ -170,15 +183,17 @@ def main(args):
                     first_frame = frame
                     continue
                 delta = cv2.absdiff(first_frame, frame)
+                first_frame = frame
                 thresh = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
                 thresh = cv2.dilate(thresh, None, iterations=2)
 
                 (contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                 for c in contours:
-                    if cv2.contourArea(c) < MIN_AREA:
+                    c_area = cv2.contourArea(c)
+                    if c_area < MIN_AREA:
                         continue
-
                     (x, y, w, h) = cv2.boundingRect(c)
+                    #print("found motion, area: ", c_area)
                     q.put((x, y, w, h))
                     if display:
                         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
@@ -203,7 +218,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("run_mode", type=str, choices=['face', 'motion'])
+    parser.add_argument("run_mode", type=str, choices=['face', 'motion', 'clean'])
     parser.add_argument("--display", dest="display", action='store_true', default=False)
     args = parser.parse_args()
     main(args)
