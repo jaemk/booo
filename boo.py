@@ -111,6 +111,10 @@ def main(args):
     if not cap.isOpened():
         error("Unable to open camera")
 
+    detector = cv2.CascadeClassifier(CASCADE_FILE)
+    if detector.empty():
+        error("cascade file not found: {}".format(CASCADE_FILE))
+
     q = Queue()
     proc = Process(target=power_control, args=(q,))
     proc.start()
@@ -126,7 +130,6 @@ def main(args):
                 error("Error reading frame")
 
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            detector = cv2.CascadeClassifier(CASCADE_FILE)
             try:
                 flag = cv2.cv.CV_HAAR_SCALE_IMAGE
             except AttributeError:
