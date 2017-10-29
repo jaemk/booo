@@ -11,8 +11,8 @@
 Description=Boo
 
 [Service]
-WorkingDirectory=/<PATH_TO_PROJ_DIR>/boo
-ExecStart=python boo.py
+WorkingDirectory=/<PATH_TO_PROJ_DIR>/booo
+ExecStart=/<PATH_TO_PROJ_DIR>/booo/boo.py
 Restart=on-failure
 
 [Install]
