@@ -12,6 +12,8 @@ Description=Boo
 
 [Service]
 WorkingDirectory=/<PATH_TO_PROJ_DIR>/booo
+# If you installed with a virtualenv
+#ExecStart=/<PATH_TO_VENV>/bin/python /<PATH_TO_PROJ_DIR>/booo/boo.py motion
 ExecStart=/<PATH_TO_PROJ_DIR>/booo/boo.py motion
 Restart=on-failure
 
