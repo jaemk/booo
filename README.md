@@ -8,7 +8,12 @@ The assumed target environment is a Raspberry Pi 2 running rasbian jessie, a PS 
 
 ## Setup
 
-**Option 1 (python3, long):**
+**Option 1 (python2, opencv2, easier):**
+
+- `apt install opencv-python`
+- Unfortunately, this requires using the system python2
+
+**Option 2 (python3, opencv3, long, problems on rpi):**
 
 - Setup a virtualenv:
     - `python3 -m virtualenv env`
@@ -17,10 +22,6 @@ The assumed target environment is a Raspberry Pi 2 running rasbian jessie, a PS 
     - Install dependencies
     - `mkdir vendor && cd vendor` -- download opencv source here
     - `cp vendor/opencv-3.1.0/data/haarcascades/haarcascade_frontalface_default.xml haarcascade.xml`
-
-**Option 2 (python2, easier):**
-
-- `apt install opencv-python`
 
 
 ## Running
@@ -33,13 +34,15 @@ If you installed with a virtual environment:
 
 ----
 
-If you installed the simple way with apt opencv-python:
+If you installed the simple way with apt opencv-python (sudo is required to access the webcam and gpio pins):
 
 ```
 $ sudo ./boo.py motion
 ```
 
 ----
+
+if you run with `--save`, a running frame-buffer will saved after motion is no longer detected.
 
 **Auto run on startup**
 

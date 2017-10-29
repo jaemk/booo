@@ -3,4 +3,4 @@ vendor/
 __pycache__/
 
 *.pyc
-
+*.avi
