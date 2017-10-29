@@ -3,6 +3,8 @@ from __future__ import print_function
 
 import sys
 import time
+import signal
+from functools import partial
 from multiprocessing import Process, Queue
 try:
     import queue as queue_lib
@@ -89,6 +91,16 @@ def power_control(q):
                     on = False
 
 
+def sig_handle(signum, frame, q=None, cap=None, proc=None):
+    print("Received SIGTERM, signum: {}".format(signum))
+    q.put('die')
+    cap.release()
+    cv2.destroyAllWindows()
+    proc.join()
+    print("Bye!")
+    sys.exit(0)
+
+
 def main(args):
     display = False
     if args and args[0] == 'display':
@@ -102,7 +114,11 @@ def main(args):
     proc = Process(target=power_control, args=(q,))
     proc.start()
 
+    _sig_handle = partial(sig_handle, q=q, cap=cap, proc=proc)
+    signal.signal(signal.SIGTERM, _sig_handle)
+
     try:
+        print("Initializing boo-loop")
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -110,9 +126,13 @@ def main(args):
 
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             detector = cv2.CascadeClassifier(CASCADE_FILE)
+            try:
+                flag = cv2.cv.CV_HAAR_SCALE_IMAGE
+            except AttributeError:
+                flag = cv2.CASCADE_SCALE_IMAGE
             rects = detector.detectMultiScale(
                     frame, scaleFactor=1.1, minNeighbors=5,
-                    minSize=(30, 30), flags=cv2.cv.CV_HAAR_SCALE_IMAGE)
+                    minSize=(30, 30), flags=flag)
             rects = ((int(x), int(y), int(x + w), int(y + h)) for (x, y, w, h) in rects)
 
             for (start_x, start_y, end_x, end_y) in rects:
