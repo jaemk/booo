@@ -12,7 +12,7 @@ Description=Boo
 
 [Service]
 WorkingDirectory=/<PATH_TO_PROJ_DIR>/booo
-ExecStart=/<PATH_TO_PROJ_DIR>/booo/boo.py
+ExecStart=/<PATH_TO_PROJ_DIR>/booo/boo.py motion
 Restart=on-failure
 
 [Install]
