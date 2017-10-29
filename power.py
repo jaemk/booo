@@ -20,6 +20,10 @@ try:
         print("Toggling OFF: PIN-{}".format(pin))
         pio.output(pin, pio.LOW)
 
+    def cleanup():
+        print("Cleaning up gpio pins")
+        pio.cleanup()
+
 except ImportError:
     def warn(msg):
         print("[WARNING] RPi module not available: {}".format(msg))
@@ -35,4 +39,7 @@ except ImportError:
 
     def off(pin):
         warn("Toggling OFF: PIN-{}".format(pin))
+
+    def cleanup():
+        warn("Cleaning up gpio pins")
 

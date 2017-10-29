@@ -97,6 +97,7 @@ def sig_handle(signum, frame, q=None, cap=None, proc=None):
     cap.release()
     cv2.destroyAllWindows()
     proc.join()
+    power.cleanup()
     print("Bye!")
     sys.exit(0)
 
@@ -134,6 +135,7 @@ def main(args):
                     frame, scaleFactor=1.1, minNeighbors=5,
                     minSize=(30, 30), flags=flag)
             rects = ((int(x), int(y), int(x + w), int(y + h)) for (x, y, w, h) in rects)
+            #print("n-rects: ", len(list(rects)))
 
             for (start_x, start_y, end_x, end_y) in rects:
                 q.put((start_x, start_y, end_x, end_y))
