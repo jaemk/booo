@@ -22,7 +22,8 @@ CASCADE_FILE = "haarcascade.xml"
 #MAX_ELAPSED_SECS = 2.5
 # faster things
 MAX_ELAPSED_SECS = 0.5
-PIN = 16
+ACTIVE_PIN = 11
+POWER_PIN = 16
 
 
 class TimeInterval:
@@ -66,8 +67,11 @@ def error(msg, exit=1):
 
 
 def power_control(q):
+    """
+    Power control routine run in a separate Process
+    """
     power.init_board()
-    power.init_out_pins(PIN)
+    power.init_out_pins(POWER_PIN)
     interval = TimeInterval()
     on = False
     while True:
@@ -81,17 +85,17 @@ def power_control(q):
                 interval.update(msg)
                 if was_valid != interval.is_valid:
                     if interval.is_valid:
-                        power.on(PIN)
+                        power.on(POWER_PIN)
                         on = True
                     elif on:
-                        power.off(PIN)
+                        power.off(POWER_PIN)
                         on = False
         except queue_lib.Empty:
             now = time.time()
             if interval.last_time is not None:
                 elapsed = now - interval.last_time
                 if elapsed > interval.max_elapsed and on:
-                    power.off(PIN)
+                    power.off(POWER_PIN)
                     on = False
 
 
@@ -101,6 +105,8 @@ def sig_handle(signum, frame, q=None, cap=None, proc=None):
     cap.release()
     cv2.destroyAllWindows()
     proc.join()
+    power.off(POWER_PIN)
+    power.off(ACTIVE_PIN)
     power.cleanup()
     print("Bye!")
     sys.exit(0)
@@ -120,6 +126,10 @@ def main(args):
     if detector.empty():
         error("cascade file not found: {}".format(CASCADE_FILE))
     print("cascade file loaded")
+
+    power.init_board()
+    power.init_out_pins(ACTIVE_PIN)
+    power.on(ACTIVE_PIN)
 
     q = Queue()
     proc = Process(target=power_control, args=(q,))
@@ -163,6 +173,8 @@ def main(args):
     cap.release()
     cv2.destroyAllWindows()
     proc.join()
+    power.off(POWER_PIN)
+    power.off(ACTIVE_PIN)
     power.cleanup()
     print("Bye!")
 
