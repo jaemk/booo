@@ -25,7 +25,7 @@ CASCADE_FILE = "haarcascade.xml"
 # faster things
 MAX_ELAPSED_SECS = 0.5
 # Motion detection area
-MIN_AREA = 200
+MIN_AREA = 250
 ACTIVE_PIN = 11
 POWER_PIN = 16
 
