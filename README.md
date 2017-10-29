@@ -1,4 +1,10 @@
-# BOO
+# BOOO
+
+> motion activated spooky actions
+
+The goal of this project is to get a motion toggled power source to activate spooky things.
+The assumed target environment is a Raspberry Pi 2 running rasbian jessie, a PS Eye webcam, and a PowerSwitchTail 2.
+
 
 ## Setup
 
