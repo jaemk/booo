@@ -4,6 +4,7 @@ from __future__ import print_function
 import sys
 import time
 import signal
+import argparse
 from functools import partial
 from multiprocessing import Process, Queue
 try:
@@ -13,11 +14,13 @@ except ImportError:
 
 import cv2
 import numpy as np
+import imutils
 
 import power
 
 
 CASCADE_FILE = "haarcascade.xml"
+MIN_AREA = 500
 # raspi
 #MAX_ELAPSED_SECS = 2.5
 # faster things
@@ -113,9 +116,7 @@ def sig_handle(signum, frame, q=None, cap=None, proc=None):
 
 
 def main(args):
-    display = False
-    if args and args[0] == 'display':
-        display = True
+    display = args.display
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -140,26 +141,47 @@ def main(args):
 
     try:
         print("Initializing boo-loop")
+        first_frame = None
         while True:
             ret, frame = cap.read()
             if not ret:
                 error("Error reading frame")
 
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            try:
-                flag = cv2.cv.CV_HAAR_SCALE_IMAGE
-            except AttributeError:
-                flag = cv2.CASCADE_SCALE_IMAGE
-            rects = detector.detectMultiScale(
-                    frame, scaleFactor=1.1, minNeighbors=5,
-                    minSize=(30, 30), flags=flag)
-            rects = ((int(x), int(y), int(x + w), int(y + h)) for (x, y, w, h) in rects)
-            #print("n-rects: ", len(list(rects)))
+            if args.run_mode == 'face':
+                try:
+                    flag = cv2.cv.CV_HAAR_SCALE_IMAGE
+                except AttributeError:
+                    flag = cv2.CASCADE_SCALE_IMAGE
+                rects = detector.detectMultiScale(
+                        frame, scaleFactor=1.1, minNeighbors=5,
+                        minSize=(30, 30), flags=flag)
+                rects = ((int(x), int(y), int(x + w), int(y + h)) for (x, y, w, h) in rects)
+                #print("n-rects: ", len(list(rects)))
 
-            for (start_x, start_y, end_x, end_y) in rects:
-                q.put((start_x, start_y, end_x, end_y))
-                if display:
-                    cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 255, 0), 2)
+                for (start_x, start_y, end_x, end_y) in rects:
+                    q.put((start_x, start_y, end_x, end_y))
+                    if display:
+                        cv2.rectangle(frame, (start_x, start_y), (end_x, end_y), (0, 255, 0), 2)
+            elif args.run_mode == 'motion':
+                #frame = imutils.resize(frame, width=500)
+                frame = cv2.GaussianBlur(frame, (21, 21), 0)
+                if first_frame is None:
+                    first_frame = frame
+                    continue
+                delta = cv2.absdiff(first_frame, frame)
+                thresh = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
+                thresh = cv2.dilate(thresh, None, iterations=2)
+
+                (contours, _) = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                for c in contours:
+                    if cv2.contourArea(c) < MIN_AREA:
+                        continue
+
+                    (x, y, w, h) = cv2.boundingRect(c)
+                    q.put((x, y, w, h))
+                    if display:
+                        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             if display:
                 cv2.imshow('frame', frame)
@@ -180,5 +202,9 @@ def main(args):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("run_mode", type=str, choices=['face', 'motion'])
+    parser.add_argument("--display", dest="display", action='store_true', default=False)
+    args = parser.parse_args()
+    main(args)
 
