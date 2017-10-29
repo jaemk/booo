@@ -17,12 +17,16 @@ import numpy as np
 import power
 
 
-CASCADE_FILE = "vendor/opencv-3.1.0/data/haarcascades/haarcascade_frontalface_default.xml"
+CASCADE_FILE = "haarcascade.xml"
+# raspi
+#MAX_ELAPSED_SECS = 2.5
+# faster things
+MAX_ELAPSED_SECS = 0.5
 PIN = 16
 
 
 class TimeInterval:
-    max_elapsed = 0.5
+    max_elapsed = MAX_ELAPSED_SECS
     def __init__(self):
         self.start_rect = None
         self.last_rect = None
@@ -110,10 +114,12 @@ def main(args):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         error("Unable to open camera")
+    print("camera is open")
 
     detector = cv2.CascadeClassifier(CASCADE_FILE)
     if detector.empty():
         error("cascade file not found: {}".format(CASCADE_FILE))
+    print("cascade file loaded")
 
     q = Queue()
     proc = Process(target=power_control, args=(q,))
