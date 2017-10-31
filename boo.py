@@ -141,7 +141,7 @@ def spooky_control(q):
                 return
             interval.update()
             if interval.is_valid and not did_pulse:
-                power.pulse(SPOOKY_PIN, times=3, delay_secs=0.75)
+                power.pulse(SPOOKY_PIN, times=2, delay_secs=2)  # 2sec delay required to get reliable actuation
                 interval.update_last_only()
                 did_pulse = True
             elif not interval.is_valid:

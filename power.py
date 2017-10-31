@@ -52,7 +52,7 @@ def pulse(pin, times=1, delay_secs=1):
         if times < 1:
             return
         on(pin)
-        time.sleep(0.001)
+        time.sleep(0.25)  # required "on" time to get a reliable actuation
         off(pin)
         if times == 1:
             return
