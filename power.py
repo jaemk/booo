@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import time
+
 
 try:
     import RPi.GPIO as pio
@@ -42,4 +44,18 @@ except ImportError:
 
     def cleanup():
         warn("Cleaning up gpio pins")
+
+
+def pulse(pin, times=1, delay_secs=1):
+    print("Pulsing {}-Times, {}s-delay: PIN-{}".format(times, delay_secs, pin))
+    while True:
+        if times < 1:
+            return
+        on(pin)
+        time.sleep(0.001)
+        off(pin)
+        if times == 1:
+            return
+        time.sleep(delay_secs)
+        times -= 1
 
